@@ -1,6 +1,6 @@
 # SOC Home Lab
 
-A hands-on Security Operations Center (SOC) lab built from scratch to practice the full detection lifecycle: generating security events, centralizing logs, detecting suspicious activity, and investigating alerts — end to end, documented as it's built.
+A hands-on Security Operations Center (SOC) lab built from scratch to practice the full detection lifecycle: generating security events, centralizing logs, detecting suspicious activity, and investigating alerts, end to end, documented as it's built.
 
 This repo is a working build log, not a polished after-the-fact writeup. Commits reflect real progress, real errors, and real fixes.
 
@@ -8,7 +8,7 @@ This repo is a working build log, not a polished after-the-fact writeup. Commits
 
 ## Why this project exists
 
-Reading about SOC tooling and actually operating it are different skills. This lab is built to close that gap: standing up a SIEM, generating realistic telemetry, tuning detections, and investigating alerts the way an analyst would on the job — then documenting the reasoning behind every architectural decision, not just the commands.
+Reading about SOC tooling and actually operating it are different skills. This lab is built to close that gap: standing up a SIEM, generating realistic telemetry, tuning detections, and investigating alerts the way an analyst would on the job, then documenting the reasoning behind every architectural decision, not just the commands.
 
 ---
 
@@ -98,4 +98,4 @@ soc-home-lab/
 
 ## About this build
 
-This lab is built in progressive phases with each step documented before moving to the next: VM provisioning, SIEM installation, agent deployment, detection engineering, and finally live investigation of simulated attacks. Every phase folder explains not just *what* was run, but *why* — the design trade-offs, the failed attempts, and the fixes.
+This lab is built in progressive phases with each step documented before moving to the next: VM provisioning, SIEM installation, agent deployment, detection engineering, and finally live investigation of simulated attacks. Every phase folder explains not just *what* was run, but *why*  the design trade-offs, the failed attempts, and the fixes.
