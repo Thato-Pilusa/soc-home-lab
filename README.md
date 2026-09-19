@@ -54,7 +54,7 @@ wazuh-mgr build, networking, and install troubleshooting: [`setup/wazuh-mgr-buil
 | kali | 192.168.56.30 | Controlled testing |
 | ubuntu-endpoint | 192.168.56.40 | Monitored Linux endpoint |
 
-All lab traffic is isolated to a VirtualBox host-only network (`192.168.56.0/24`) with no route to the physical LAN — see [`architecture/network-diagram.md`](architecture/network-diagram.md) for why.
+All lab traffic is isolated to a VirtualBox host-only network (`192.168.56.0/24`) with no route to the physical LAN see [`architecture/network-diagram.md`](architecture/network-diagram.md) for why.
 
 ---
 
