@@ -1,6 +1,6 @@
 # SOC Home Lab
 
-A hands-on Security Operations Center (SOC) lab built from scratch to practice the full detection lifecycle: generating security events, centralizing logs, detecting suspicious activity, and investigating alerts, end to end, documented as it's built.
+A hands-on Security Operations Center (SOC) lab built from scratch to practice the full detection lifecycle: generating security events, centralizing logs, detecting suspicious activity, and investigating alerts end to end, documented as it's built.
 
 This repo is a working build log, not a polished after-the-fact writeup. Commits reflect real progress, real errors, and real fixes.
 
@@ -8,7 +8,7 @@ This repo is a working build log, not a polished after-the-fact writeup. Commits
 
 ## Why this project exists
 
-Reading about SOC tooling and actually operating it are different skills. This lab is built to close that gap: standing up a SIEM, generating realistic telemetry, tuning detections, and investigating alerts the way an analyst would on the job, then documenting the reasoning behind every architectural decision, not just the commands.
+Reading about SOC tooling and actually operating it are different skills. This lab is built to close that gap: standing up a SIEM, generating realistic telemetry, tuning detections, and investigating alerts the way an analyst would on the job then documenting the reasoning behind every architectural decision, not just the commands.
 
 ---
 
@@ -18,7 +18,7 @@ Reading about SOC tooling and actually operating it are different skills. This l
 Endpoint activity
   → Windows Event Log / Sysmon / Linux auth logs
   → Wazuh Agent (local collection)
-  → Wazuh Manager (192.168.56.10:1514/tcp)
+  → Wazuh Manager (host-only network, port 1514/tcp)
   → Analysis engine (decoders → rules → alerts)
   → Wazuh Indexer (storage and search)
   → Wazuh Dashboard (visualization)
@@ -46,15 +46,15 @@ wazuh-mgr build, networking, and install troubleshooting: [`setup/wazuh-mgr-buil
 
 ## Lab topology
 
-| Host | Host-only IP | Role |
-|---|---|---|
-| Windows host | 192.168.56.1 | Analyst workstation |
-| wazuh-mgr | 192.168.56.10 | Wazuh Manager / Indexer / Dashboard |
-| win11-endpoint | 192.168.56.20 | Monitored Windows endpoint |
-| kali | 192.168.56.30 | Controlled testing |
-| ubuntu-endpoint | 192.168.56.40 | Monitored Linux endpoint |
+| Host | Role |
+|---|---|
+| Windows host | Analyst workstation |
+| wazuh-mgr | Wazuh Manager / Indexer / Dashboard |
+| win11-endpoint | Monitored Windows endpoint |
+| kali | Controlled testing |
+| ubuntu-endpoint | Monitored Linux endpoint |
 
-All lab traffic is isolated to a VirtualBox host-only network (`192.168.56.0/24`) with no route to the physical LAN — see [`architecture/network-diagram.md`](architecture/network-diagram.md) for why.
+All lab traffic is isolated to a VirtualBox host-only network with no route to the physical LAN, see [`architecture/network-diagram.md`](architecture/network-diagram.md) for why. Specific addressing is documented separately in [`architecture/ip-addresses.md`](architecture/ip-addresses.md) using a generalized notation rather than real network values.
 
 ---
 
@@ -98,4 +98,4 @@ soc-home-lab/
 
 ## About this build
 
-This lab is built in progressive phases with each step documented before moving to the next: VM provisioning, SIEM installation, agent deployment, detection engineering, and finally live investigation of simulated attacks. Every phase folder explains not just *what* was run, but *why*  the design trade-offs, the failed attempts, and the fixes.
+This lab is built in progressive phases with each step documented before moving to the next: VM provisioning, SIEM installation, agent deployment, detection engineering, and finally live investigation of simulated attacks. Every phase folder explains not just *what* was run, but *why* the design trade-offs, the failed attempts, and the fixes.

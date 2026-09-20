@@ -1,6 +1,8 @@
-# Setup: wazuh-mgr — VM Build, Networking & Wazuh Installation
+# Setup: wazuh-mgr, VM Build, Networking & Wazuh Installation
 
-This document covers building the `wazuh-mgr` VM from scratch: VirtualBox provisioning, dual-adapter networking, static IP configuration, and installing Wazuh (Indexer + Manager + Dashboard). It includes the real troubleshooting encountered along the way left in deliberately, since diagnosing and resolving issues is a core part of SOC analyst work.
+This document covers building the `wazuh-mgr` VM from scratch: VirtualBox provisioning, dual-adapter networking, static IP configuration, and installing Wazuh (Indexer + Manager + Dashboard). It includes the real troubleshooting encountered along the way, left in deliberately, since diagnosing and resolving issues is a core part of SOC analyst work.
+
+Note on addressing: this document uses `X.X.X.N` in place of the lab's actual private IP range, see [`architecture/ip-addresses.md`](../architecture/ip-addresses.md) for the notation convention.
 
 ---
 
@@ -12,11 +14,11 @@ Created in VirtualBox per the spec in [`architecture/ip-addresses.md`](../archit
 |---|---|
 | Name | wazuh-mgr |
 | OS | Ubuntu Server 24.04.4 LTS |
-| Base Memory | 5120 MB *(see note below — plan called for 4 GB)* |
+| Base Memory | 5120 MB *(see note below, plan called for 4 GB)* |
 | Processors | 2 |
 | Disk | 50 GB, VDI, dynamically allocated |
 
-**Note on RAM:** the architecture plan specified 4096 MB. In practice, `free -h` inside the guest showed only ~3.3 GB usable at that allocation — kernel/firmware overhead (this VM has EFI enabled) ate into the rest. Since Wazuh's Indexer reserves JVM heap on startup and needs genuine 4 GB+ to avoid degraded dashboard performance, Base Memory was increased to 5120 MB to guarantee real 4 GB+ usable inside the guest. Confirmed afterward: `free -h` reported 4.3 GB total.
+**Note on RAM:** the architecture plan specified 4096 MB. In practice, `free -h` inside the guest showed only ~3.3 GB usable at that allocation, kernel/firmware overhead (this VM has EFI enabled) ate into the rest. Since Wazuh's Indexer reserves JVM heap on startup and needs genuine 4 GB+ to avoid degraded dashboard performance, Base Memory was increased to 5120 MB to guarantee real 4 GB+ usable inside the guest. Confirmed afterward: `free -h` reported 4.3 GB total.
 
 ---
 
@@ -24,42 +26,36 @@ Created in VirtualBox per the spec in [`architecture/ip-addresses.md`](../archit
 
 Two adapters, per the architecture design ([full rationale here](../architecture/network-diagram.md)):
 
-- **Adapter 1 — NAT:** outbound internet only, for package installs.
-- **Adapter 2 — Host-only:** static `192.168.56.10/24`, the lab backbone.
+- Adapter 1, NAT: outbound internet only, for package installs.
+- Adapter 2, Host-only: static address, the lab backbone.
 
 ### Issue: host-only network created on the wrong subnet
 
-VirtualBox auto-created its default host-only adapter on `192.168.187.0/24` instead of the planned `192.168.56.0/24`. Rather than redesign the IP plan around VirtualBox's default, the host-only adapter's IPv4 address was edited directly in VirtualBox's Host Network Manager to `192.168.56.1/24`, matching the original plan. The VM's Adapter 2 setting itself needed no change it was already correctly attached to the same host-only network, just under the corrected range.
+VirtualBox auto-created its default host-only adapter on an unexpected subnet instead of the one planned for the lab. Rather than redesign the IP plan around VirtualBox's default, the host-only adapter's IPv4 address was edited directly in VirtualBox's Host Network Manager to match the original plan. The VM's Adapter 2 setting itself needed no change, it was already correctly attached to the same host-only network, just under the corrected range.
 
 ### Issue: "Failed to open/create the internal network" on boot
 
-After editing the host-only adapter's IP, the VM failed to boot with `VERR_INTNET_FLT_IF_NOT_FOUND`. Root cause: Windows' network driver binding for the VirtualBox Host-Only Ethernet Adapter had been knocked loose by the IP change. Fixed by disabling and re-enabling the adapter in Windows' Network Connections panel no VirtualBox-side reinstall needed.
+After editing the host-only adapter's IP, the VM failed to boot with `VERR_INTNET_FLT_IF_NOT_FOUND`. Root cause: Windows' network driver binding for the VirtualBox Host-Only Ethernet Adapter had been knocked loose by the IP change. Fixed by disabling and re-enabling the adapter in Windows' Network Connections panel, no VirtualBox-side reinstall needed.
 
 ### Static IP via Netplan
 
-Target: `enp0s8` (host-only) → `192.168.56.10/24`, no gateway on this interface (default route stays on the NAT adapter, `enp0s3`).
+Target: `enp0s8` (host-only) → static address `X.X.X.10/24`, no gateway on this interface (default route stays on the NAT adapter, `enp0s3`).
 
 Working config (`/etc/netplan/00-installer-config.yaml`), using YAML flow-style syntax rather than nested block indentation:
 
 ```yaml
-network: {version: 2, ethernets: {enp0s3: {dhcp4: true, dhcp6: true, match: {macaddress: "08:00:27:72:8c:6a"}, set-name: "enp0s3"}, enp0s8: {dhcp4: false, addresses: ["192.168.56.10/24"]}}}
+network: {version: 2, ethernets: {enp0s3: {dhcp4: true, dhcp6: true, match: {macaddress: "<redacted>"}, set-name: "enp0s3"}, enp0s8: {dhcp4: false, addresses: ["X.X.X.10/24"]}}}
 ```
 
-**Why flow-style:** this VM has no desktop environment, so VirtualBox's shared clipboard doesn't work with the console — every config line had to be typed manually into `nano`, which repeatedly produced inconsistent-indentation errors from single-space mistakes in nested block YAML. Flow-style JSON-like syntax removes indentation from the equation entirely while remaining valid YAML, making it far less error-prone to type by hand.
+**Why flow-style:** this VM has no desktop environment, so VirtualBox's shared clipboard doesn't work with the console, every config line had to be typed manually into `nano`, which repeatedly produced inconsistent-indentation errors from single-space mistakes in nested block YAML. Flow-style JSON-like syntax removes indentation from the equation entirely while remaining valid YAML, making it far less error-prone to type by hand.
 
-Verified with `sudo netplan try`, then `ip a` confirmed `192.168.56.10/24` on `enp0s8`. Connectivity confirmed both directions:
-- Host → VM: `ping 192.168.56.10` from Windows Command Prompt 0% loss
-- VM → Host: `ping 192.168.56.1` from the guest
+Verified with `sudo netplan try`, then `ip a` confirmed the static address on `enp0s8`. Connectivity confirmed both directions:
+- Host → VM: ping from Windows Command Prompt, 0% loss
+- VM → Host: ping from the guest back to the host address
 
 ### SSH access
 
-`openssh-server` was already active on the guest. Connected from Windows via the built-in SSH client:
-
-```
-ssh thato@192.168.56.10
-```
-
-This replaced typing directly into the VirtualBox console window and enabled copy-paste from a normal terminal for all subsequent work.
+`openssh-server` was already active on the guest. Connected from Windows via the built-in SSH client, using the VM's static host-only address. This replaced typing directly into the VirtualBox console window and enabled copy-paste from a normal terminal for all subsequent work.
 
 ---
 
@@ -80,13 +76,13 @@ Before the RAM fix above, the installer refused to proceed:
 ERROR: Your system does not meet the recommended minimum hardware requirements of 4Gb of RAM and 2 CPU cores.
 ```
 
-Resolved by the Base Memory increase described in Section 1, rather than bypassing the check with `-i` since the underlying concern (genuine 4 GB+ for the Indexer's heap) was real, not just a check to satisfy.
+Resolved by the Base Memory increase described in Section 1, rather than bypassing the check with `-i`, since the underlying concern (genuine 4 GB+ for the Indexer's heap) was real, not just a check to satisfy.
 
 ### Issue: SSH disconnect killed the installer mid-run
 
-The first full install attempt was run as a normal foreground SSH command. The SSH session dropped partway through the Dashboard stage (`client_loop: send disconnect: Connection reset`), which killed the installer process along with it Indexer, Manager, and Filebeat had already completed successfully, but the Dashboard component was left in a partially-installed, non-running state.
+The first full install attempt was run as a normal foreground SSH command. The SSH session dropped partway through the Dashboard stage (`client_loop: send disconnect: Connection reset`), which killed the installer process along with it, Indexer, Manager, and Filebeat had already completed successfully, but the Dashboard component was left in a partially-installed, non-running state.
 
-**Fix — run detached from the SSH session:**
+**Fix, run detached from the SSH session:**
 
 ```bash
 sudo nohup bash wazuh-install.sh -wd wazuh-dashboard -o > wazuh-dashboard-install.log 2>&1 &
@@ -95,7 +91,7 @@ tail -f wazuh-dashboard-install.log
 
 `nohup ... &` runs the installer independently of the SSH session, so a dropped connection no longer kills the install. Output is redirected to a log file and watched with `tail -f`, which can be safely interrupted (Ctrl+C) and resumed at any time without affecting the running install.
 
-Note: `nohup` protects against a dropped *SSH session*, but not against the *VM itself* rebooting a VM restart kills all processes regardless. Confirmed this distinction directly when a VM reboot between sessions had silently ended an earlier detached run, identified via `uptime` showing a fresh boot time inconsistent with the expected session length.
+Note: `nohup` protects against a dropped SSH session, but not against the VM itself rebooting, a VM restart kills all processes regardless. Confirmed this distinction directly when a VM reboot between sessions had silently ended an earlier detached run, identified via `uptime` showing a fresh boot time inconsistent with the expected session length.
 
 Targeting just the dashboard component required the node name from the installer's generated config, rather than guessing at the flag syntax:
 
@@ -105,7 +101,7 @@ sudo tar -xOf wazuh-install-files.tar wazuh-install-files/config.yml
 
 which showed the dashboard node was named `wazuh-dashboard`, giving the correct command: `wazuh-install.sh -wd wazuh-dashboard`.
 
-### Issue: dashboard install failed — indexer security not initialized
+### Issue: dashboard install failed, indexer security not initialized
 
 The re-run failed with:
 
@@ -128,6 +124,48 @@ sudo nohup bash wazuh-install.sh -s > wazuh-cluster-init.log 2>&1 &
 
 After this completed, the same `curl` command returned `200 OK` with full cluster JSON, confirming the fix. The dashboard install was then re-run and completed cleanly.
 
+### Issue: Dashboard health check failed with "No API available to connect"
+
+After the Dashboard installed successfully, its own built-in health check showed a red "Check API connection" failure. The Manager's API service itself was confirmed healthy and responding:
+
+```bash
+sudo systemctl status wazuh-manager --no-pager
+curl -k -u wazuh:'<password>' https://localhost:55000
+```
+
+The API returned a proper `{"title": "Unauthorized", "detail": "No authorization token provided"}` response, meaning the service was reachable, just requiring the correct token-based login rather than basic auth on that endpoint. Testing the actual login flow used by the Dashboard revealed the real problem:
+
+```bash
+curl -k -u wazuh-wui:'<password-from-config>' -X POST https://localhost:55000/security/user/authenticate
+```
+
+This returned `Invalid credentials`, even though the password matched what was recorded in the generated credentials file and in the Dashboard's own config (`wazuh.yml`). Testing the other default API account produced the same result, ruling out a single-account issue.
+
+Root cause: the install script generates random passwords and is supposed to push them into the API's live user store as one of its final steps, but that push never completed, likely a side effect of the earlier interrupted install. The API was still authenticating against its original default credentials rather than the ones recorded in the generated credentials file. Confirmed directly:
+
+```bash
+curl -k -u wazuh:wazuh -X POST https://localhost:55000/security/user/authenticate
+```
+
+This succeeded and returned a valid token, confirming the API was still on default credentials.
+
+**Fix**, using Wazuh's official password management tool rather than manually editing config files:
+
+```bash
+curl -sO https://packages.wazuh.com/4.9/wazuh-passwords-tool.sh
+sudo bash wazuh-passwords-tool.sh -h
+```
+
+Checking the tool's own help output first (rather than assuming flag syntax from documentation covering a different release) confirmed the correct usage, then both affected accounts were reset to their intended values using the still-working default credentials to authorize the change:
+
+```bash
+sudo bash wazuh-passwords-tool.sh -A -au wazuh -ap wazuh -u wazuh-wui -p '<intended-password>'
+sudo bash wazuh-passwords-tool.sh -A -au wazuh -ap wazuh -u wazuh -p '<intended-password>'
+sudo systemctl restart wazuh-dashboard
+```
+
+The tool automatically updated the Dashboard's `wazuh.yml` config with the new `wazuh-wui` password as part of the reset. After restarting the Dashboard service, the health check passed cleanly.
+
 ---
 
 ## 4. Verification
@@ -136,12 +174,14 @@ After this completed, the same `curl` command returned `200 OK` with full cluste
 sudo systemctl status wazuh-indexer wazuh-manager filebeat wazuh-dashboard --no-pager
 ```
 
-All four components confirmed `active (running)`. Dashboard accessed from the Windows host browser at `https://192.168.56.10`, logged in with the admin credentials generated during install (stored in `wazuh-install-files.tar` → `wazuh-passwords.txt` on the VM).
+All four components confirmed `active (running)`. Dashboard accessed from the Windows host browser over HTTPS on the Manager's static host-only address, logged in with the admin credentials generated during install.
 
 ---
 
 ## Lessons carried forward
 
 - Verify a service's actual health directly (`curl` against its API) rather than trusting a dependent component's error message about it, the dashboard installer's suggested fix (`-fd`, bypass) would have masked a real problem instead of fixing it.
+- A "service running" status and a "service correctly authenticating" status are not the same thing, both the Indexer and the API issues looked identical from a surface-level service check and only revealed themselves under an actual login test.
 - Any long-running install over SSH should run detached (`nohup ... &`) from the start, not just after the first disconnect.
-- `nohup` survives a dropped SSH session but not a VM reboot — worth remembering before assuming a background job is still running after time has passed.
+- `nohup` survives a dropped SSH session but not a VM reboot, worth remembering before assuming a background job is still running after time has passed.
+- When a tool exists for a specific maintenance task (like resetting service passwords), check its own `--help` output for the installed version rather than trusting general documentation, flag names and syntax can differ between releases.
