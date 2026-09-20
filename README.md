@@ -78,21 +78,21 @@ soc-home-lab/
 
 | Milestone | Status |
 |---|---|
-| VirtualBox ready | ✅ Complete |
-| Windows 11 VM | ✅ Complete |
-| Lab architecture designed | ✅ Complete |
-| Repo structure + core docs | ✅ Complete |
-| Ubuntu Server (wazuh-mgr) installed | ✅ Complete |
-| Wazuh installed | ✅ Complete |
-| Wazuh Agent connected | ⬜ Not started |
-| Sysmon deployed | ⬜ Not started |
-| First telemetry received | ⬜ Not started |
-| First alert investigated | ⬜ Not started |
-| Kali added | ⬜ Not started |
-| First controlled security test | ⬜ Not started |
-| Ubuntu endpoint added | ⬜ Not started |
-| Custom detection created | ⬜ Not started |
-| Full incident investigation | ⬜ Not started |
+| VirtualBox ready | Complete |
+| Windows 11 VM | Complete |
+| Lab architecture designed | Complete |
+| Repo structure + core docs | Complete |
+| Ubuntu Server (wazuh-mgr) installed | Complete |
+| Wazuh installed | Complete |
+| Wazuh Agent connected | Not started |
+| Sysmon deployed | Not started |
+| First telemetry received | Not started |
+| First alert investigated | Not started |
+| Kali added | Complete |
+| First controlled security test | Not started |
+| Ubuntu endpoint added | Not started |
+| Custom detection created | Not started |
+| Full incident investigation | Not started |
 
 ---
 
