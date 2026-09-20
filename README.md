@@ -28,6 +28,7 @@ Endpoint activity
 Full network design and rationale: [`architecture/network-diagram.md`](architecture/network-diagram.md)
 IP allocation and port reference: [`architecture/ip-addresses.md`](architecture/ip-addresses.md)
 wazuh-mgr build, networking, and install troubleshooting: [`setup/wazuh-mgr-build.md`](setup/wazuh-mgr-build.md)
+win11-endpoint agent enrollment and Sysmon deployment: [`setup/windows-agent-sysmon.md`](setup/windows-agent-sysmon.md)
 
 ---
 
@@ -78,21 +79,21 @@ soc-home-lab/
 
 | Milestone | Status |
 |---|---|
-| VirtualBox ready | ✅ Complete |
-| Windows 11 VM | ✅ Complete |
-| Lab architecture designed | ✅ Complete |
-| Repo structure + core docs | ✅ Complete |
-| Ubuntu Server (wazuh-mgr) installed | ✅ Complete |
-| Wazuh installed | ✅ Complete |
-| Wazuh Agent connected | ⬜ Not started |
-| Sysmon deployed | ⬜ Not started |
-| First telemetry received | ⬜ Not started |
-| First alert investigated | ⬜ Not started |
-| Kali added | ⬜ Not started |
-| First controlled security test | ⬜ Not started |
-| Ubuntu endpoint added | ⬜ Not started |
-| Custom detection created | ⬜ Not started |
-| Full incident investigation | ⬜ Not started |
+| VirtualBox ready | Complete |
+| Windows 11 VM | Complete |
+| Lab architecture designed | Complete |
+| Repo structure + core docs | Complete |
+| Ubuntu Server (wazuh-mgr) installed | Complete |
+| Wazuh installed | Complete |
+| Wazuh Agent connected | Complete |
+| Sysmon deployed | Complete |
+| First telemetry received | Complete |
+| First alert investigated | Not started |
+| Kali added | Not started |
+| First controlled security test | Not started |
+| Ubuntu endpoint added | Not started |
+| Custom detection created | Not started |
+| Full incident investigation | Not started |
 
 ---
 
