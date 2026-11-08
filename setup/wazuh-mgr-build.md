@@ -13,7 +13,7 @@ Created in VirtualBox per the spec in [`architecture/ip-addresses.md`](../archit
 | Setting | Value |
 |---|---|
 | Name | wazuh-mgr |
-| OS | Ubuntu Server 24.04.4 LTS |
+| OS | Ubuntu Server 26.04.1 LTS |
 | Base Memory | 5120 MB *(see note below, plan called for 4 GB)* |
 | Processors | 2 |
 | Disk | 50 GB, VDI, dynamically allocated |

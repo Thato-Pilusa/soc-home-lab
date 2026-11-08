@@ -29,6 +29,8 @@ Full network design and rationale: [`architecture/network-diagram.md`](architect
 IP allocation and port reference: [`architecture/ip-addresses.md`](architecture/ip-addresses.md)
 wazuh-mgr build, networking, and install troubleshooting: [`setup/wazuh-mgr-build.md`](setup/wazuh-mgr-build.md)
 win11-endpoint agent enrollment and Sysmon deployment: [`setup/windows-agent-sysmon.md`](setup/windows-agent-sysmon.md)
+Post-downtime Indexer recovery and boot persistence: [`setup/post-downtime-recovery.md`](setup/post-downtime-recovery.md)
+First alert investigation: [`investigations/first-alert-msedge-dll-drop.md`](investigations/first-alert-msedge-dll-drop.md)
 
 ---
 
@@ -38,7 +40,7 @@ win11-endpoint agent enrollment and Sysmon deployment: [`setup/windows-agent-sys
 |---|---|
 | Hypervisor | VirtualBox |
 | SIEM | Wazuh (Manager + Indexer + Dashboard) |
-| Wazuh server OS | Ubuntu Server 24.04.4 LTS |
+| Wazuh server OS | Ubuntu Server 26.04.1 LTS |
 | Endpoint 1 | Windows 11 (Wazuh Agent + Sysmon) |
 | Endpoint 2 | Ubuntu Server (SSH/auth logs) |
 | Attack simulation | Kali Linux (Nmap and other controlled tools, lab-only) |
@@ -88,7 +90,7 @@ soc-home-lab/
 | Wazuh Agent connected | Complete |
 | Sysmon deployed | Complete |
 | First telemetry received | Complete |
-| First alert investigated | Not started |
+| First alert investigated | Complete |
 | Kali added | Not started |
 | First controlled security test | Not started |
 | Ubuntu endpoint added | Not started |
